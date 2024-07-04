@@ -1,0 +1,21 @@
+# Import Active Directory module
+Import-Module ActiveDirectory
+
+# Define the target OU distinguished name where disabled accounts will be moved
+$TargetOU = "OU=Disabled-Users,DC=itmindstorm,DC=com"
+
+# Search for all disabled user accounts in the domain
+$DisabledUsers = Get-ADUser -Filter {Enabled -eq $false} -Properties DistinguishedName
+
+# Loop through each disabled user account and move to the target OU
+foreach ($User in $DisabledUsers) {
+    $UserDistinguishedName = $User.DistinguishedName
+    try {
+        Move-ADObject -Identity $UserDistinguishedName -TargetPath $TargetOU
+        Write-Host "Successfully moved user: $UserDistinguishedName to $TargetOU"
+    } catch {
+        Write-Host "Failed to move user: $UserDistinguishedName. Error: $_"
+    }
+}
+
+Write-Host "Process complete. All disabled accounts have been moved to $TargetOU."
